@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ project_name }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}" class="brand">{{ project_name }}</a>
+            </div>
+            <div class="nav-menu">
+                {% if current_user.is_authenticated %}
+                    <span class="user-info">
+                        {% if current_user.is_admin %}
+                            <span class="admin-badge">{{ ui_text.admin }}</span>
+                        {% endif %}
+                        {{ current_user.username }}
+                    </span>
+                    <a href="{{ url_for('auth.logout') }}" class="logout-btn">{{ ui_text.logout }}</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">{{ ui_text.login }}</a>
+                    <a href="{{ url_for('auth.register') }}" class="register-btn">{{ ui_text.register }}</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        {% if current_user.is_authenticated %}
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                    <span class="sidebar-icon">👥</span>
+                    <span>{{ ui_text.user_management }}</span>
+                </a>
+                <a href="{{ url_for('admin.all_logs') }}" class="sidebar-link {% if request.endpoint == 'admin.all_logs' %}active{% endif %}">
+                    <span class="sidebar-icon">📝</span>
+                    <span>{{ ui_text.operation_logs }}</span>
+                </a>
+                <a href="{{ url_for('admin.verification_codes') }}" class="sidebar-link {% if request.endpoint == 'admin.verification_codes' %}active{% endif %}">
+                    <span class="sidebar-icon">🎫</span>
+                    <span>{{ ui_text.verification_codes }}</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('user.dashboard') }}" class="sidebar-link {% if request.endpoint == 'user.dashboard' %}active{% endif %}">
+                    <span class="sidebar-icon">📊</span>
+                    <span>{{ ui_text.dashboard }}</span>
+                </a>
+                <a href="{{ url_for('user.redeem') }}" class="sidebar-link {% if request.endpoint == 'user.redeem' %}active{% endif %}">
+                    <span class="sidebar-icon">🎫</span>
+                    <span>{{ ui_text.redeem_code }}</span>
+                </a>
+                <a href="{{ url_for('user.logs') }}" class="sidebar-link {% if request.endpoint == 'user.logs' %}active{% endif %}">
+                    <span class="sidebar-icon">📝</span>
+                    <span>{{ resource_name_plural }}{{ ui_text.usage_records }}</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('user.profile') }}" class="sidebar-link {% if request.endpoint in ['user.profile', 'user.change_password'] %}active{% endif %}">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>{{ ui_text.profile }}</span>
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+        
+        <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 {{ project_name }}. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

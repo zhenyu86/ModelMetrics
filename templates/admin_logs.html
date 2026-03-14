@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ui_text.operation_logs }} - {{ project_name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1>{{ ui_text.operation_logs }}</h1>
+    </div>
+    
+    <div class="action-section" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <form method="GET" action="{{ url_for('admin.all_logs') }}" class="search-form" style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 500px;">
+                <input type="text" name="search" class="form-control" style="flex: 1;" placeholder="{{ ui_text.search }}{{ ui_text.target_user }}..." value="{{ search_query or '' }}">
+                <button type="submit" class="btn btn-primary">{{ ui_text.search }}</button>
+                {% if search_query %}
+                <a href="{{ url_for('admin.all_logs') }}" class="btn btn-secondary">{{ ui_text.cancel }}</a>
+                {% endif %}
+            </form>
+            <form method="POST" action="{{ url_for('admin.clear_all_logs') }}" onsubmit="return confirm('确定要清除所有操作记录吗？');">
+                <button type="submit" class="btn btn-danger">一键清除</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ ui_text.time }}</th>
+                    <th>{{ ui_text.target_user }}</th>
+                    <th>{{ ui_text.operator }}</th>
+                    <th>{{ ui_text.action_type }}</th>
+                    <th>{{ resource_name }}{{ ui_text.amount }}</th>
+                    <th>{{ ui_text.description }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        <strong>{{ log.user.username if log.user else '未知' }}</strong>
+                    </td>
+                    <td>
+                        {% if log.operator %}
+                            <span>{{ log.operator.username }}</span>
+                        {% elif log.operator_id %}
+                            <span>ID: {{ log.operator_id }}</span>
+                        {% else %}
+                            <span>系统</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.action == 'consume' %}
+                            <span class="badge badge-warning">{{ ui_text.consume }}</span>
+                        {% elif log.action == 'add' %}
+                            <span class="badge badge-success">{{ ui_text.add }}</span>
+                        {% elif log.action == 'reduce' %}
+                            <span class="badge badge-info">{{ ui_text.reduce }}</span>
+                        {% else %}
+                            <span class="badge badge-secondary">{{ log.action }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log.amount }}</td>
+                    <td>
+                        {% if log.action == 'consume' %}
+                            {{ action_consume }}了 {{ log.amount }} {{ resource_name_plural }}
+                        {% elif log.action == 'add' %}
+                            {{ action_add }}了 {{ log.amount }} {{ resource_name_plural }}
+                        {% elif log.action == 'reduce' %}
+                            {{ action_reduce }}了 {{ log.amount }} {{ resource_name_plural }}
+                        {% else %}
+                            {{ log.action }}: {{ log.amount }} {{ resource_name_plural }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">{{ ui_text.no_records }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

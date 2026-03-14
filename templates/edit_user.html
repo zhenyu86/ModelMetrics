@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}{% if user %}{{ ui_text.edit_user }}{% else %}{{ ui_text.add_user }}{% endif %} - {{ project_name }}{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width: 900px;">
+    <h1>{% if user %}{{ ui_text.edit_user }}{% else %}{{ ui_text.add_user }}{% endif %}</h1>
+    
+    <form method="POST" class="form">
+        {{ form.hidden_tag() }}
+        
+        {% if user %}
+        <div class="user-info-row">
+            <div class="user-info-item">
+                <span class="info-label">{{ ui_text.username }}</span>
+                <span class="info-value">{{ user.username }}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="info-label">{{ ui_text.email }}</span>
+                <span class="info-value">{{ user.email }}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="info-label">{{ ui_text.role }}</span>
+                <span class="info-value">
+                    {% if user.is_admin %}
+                    <span class="badge badge-admin">{{ ui_text.admin }}</span>
+                    {% else %}
+                    <span class="badge badge-user">{{ ui_text.user }}</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        {% if user.is_admin %}
+        <div class="modules-row">
+            <div class="module-card password-module" style="flex: 1; max-width: 400px; margin: 0 auto;">
+                <div class="module-header">
+                    <span class="module-icon">🔐</span>
+                    <span class="module-title">{{ ui_text.reset_password }}</span>
+                </div>
+                <div class="module-body">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <input type="password" name="new_password" class="form-control" placeholder="输入新密码（至少6位）">
+                    </div>
+                    <button type="submit" name="action" value="password" class="btn btn-primary btn-block">{{ ui_text.save }}</button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="modules-row">
+            <div class="module-card password-module">
+                <div class="module-header">
+                    <span class="module-icon">🔐</span>
+                    <span class="module-title">{{ ui_text.reset_password }}</span>
+                </div>
+                <div class="module-body">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <input type="password" name="new_password" class="form-control" placeholder="输入新密码（至少6位）">
+                    </div>
+                    <button type="submit" name="action" value="password" class="btn btn-primary btn-block">{{ ui_text.save }}</button>
+                </div>
+            </div>
+            
+            <div class="module-card tokens-module">
+                <div class="module-header">
+                    <span class="module-icon">💳</span>
+                    <span class="module-title">{{ resource_name_plural }} 管理</span>
+                </div>
+                <div class="module-body">
+                    <div class="tokens-display">
+                        <div class="token-item">
+                            <span class="token-num">{{ user.total_tokens }}</span>
+                            <span class="token-label">{{ ui_text.total }} {{ resource_name_plural }}</span>
+                        </div>
+                        <div class="token-item">
+                            <span class="token-num">{{ user.used_tokens }}</span>
+                            <span class="token-label">{{ ui_text.used }}</span>
+                        </div>
+                        <div class="token-item">
+                            <span class="token-num {% if user.remaining_tokens < 100 %}text-danger{% endif %}">{{ user.remaining_tokens }}</span>
+                            <span class="token-label">{{ ui_text.remaining }}</span>
+                        </div>
+                    </div>
+                    <div class="tokens-inputs">
+                        <input type="number" name="add_tokens" class="form-control" placeholder="+ {{ ui_text.add }}">
+                        <input type="number" name="reduce_tokens" class="form-control" placeholder="- {{ ui_text.reduce }}" max="{{ user.remaining_tokens }}">
+                    </div>
+                    <button type="submit" name="action" value="tokens" class="btn btn-success btn-block">{{ ui_text.save }}</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="form-actions" style="margin-top: 24px;">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">返回用户列表</a>
+        </div>
+        
+        {% else %}
+        <div class="add-user-form">
+            <div class="form-group">
+                <label for="username">{{ ui_text.username }}</label>
+                <input type="text" name="username" id="username" class="form-control" placeholder="请输入用户名（至少3个字符）" value="{{ default_username or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">{{ ui_text.email }}</label>
+                <input type="email" name="email" id="email" class="form-control" placeholder="请输入邮箱地址" value="{{ default_email or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="total_tokens">初始 {{ resource_name_plural }}</label>
+                <input type="number" name="total_tokens" id="total_tokens" class="form-control" value="{{ default_tokens or '0' }}" min="0" placeholder="请输入初始{{ resource_name }}{{ ui_text.quantity }}">
+                <p class="help-text">新用户默认 {{ resource_name_plural }} 为 0</p>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">创建用户</button>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">{{ ui_text.cancel }}</a>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<style>
+.user-info-row {
+    display: flex;
+    gap: 20px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+}
+
+.user-info-item {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-info-item:last-child {
+    border-right: none;
+}
+
+.user-info-item .info-label {
+    display: block;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.user-info-item .info-value {
+    display: block;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.modules-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.module-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.module-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: #f8fafc;
+}
+
+.module-icon {
+    font-size: 24px;
+}
+
+.module-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.module-body {
+    padding: 20px;
+}
+
+.password-module {
+    border-top: 4px solid #667eea;
+}
+
+.tokens-module {
+    border-top: 4px solid #38a169;
+}
+
+.tokens-display {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.token-item {
+    flex: 1;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 12px 8px;
+}
+
+.token-num {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.token-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.tokens-inputs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.tokens-inputs input {
+    flex: 1;
+    text-align: center;
+}
+
+.add-user-form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .user-info-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .user-info-item {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 8px;
+    }
+    
+    .user-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .modules-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

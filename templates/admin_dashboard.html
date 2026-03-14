@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ui_text.admin_panel }} - {{ project_name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1>{{ ui_text.dashboard }}</h1>
+    </div>
+    
+    <div class="stats-cards">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">{{ users|sum(attribute='total_tokens') }}</div>
+            <div class="stat-label">{{ ui_text.total }} {{ resource_name_plural }}</div>
+        </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">{{ users|sum(attribute='used_tokens') }}</div>
+            <div class="stat-label">{{ ui_text.used }} {{ resource_name_plural }}</div>
+        </div>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">✨</div>
+            <div class="stat-value">{{ users|sum(attribute='total_tokens') - users|sum(attribute='used_tokens') }}</div>
+            <div class="stat-label">{{ ui_text.remaining }} {{ resource_name_plural }}</div>
+        </div>
+    </div>
+    
+    <div class="action-section" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <form method="GET" action="{{ url_for('admin.dashboard') }}" class="search-form" style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 500px;">
+                <input type="text" name="search" class="form-control" style="flex: 1;" placeholder="{{ ui_text.search }}..." value="{{ search_query or '' }}">
+                <button type="submit" class="btn btn-primary">{{ ui_text.search }}</button>
+                {% if search_query %}
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">{{ ui_text.cancel }}</a>
+                {% endif %}
+            </form>
+            <div style="display: flex; gap: 10px;">
+                {% if users %}
+                <form method="POST" action="{{ url_for('admin.delete_all_users') }}" onsubmit="return confirm('确定要删除所有普通用户吗？此操作不可恢复！');">
+                    <button type="submit" class="btn btn-danger">清空用户</button>
+                </form>
+                {% endif %}
+                <a href="{{ url_for('admin.add_user') }}" class="btn btn-success">+ {{ ui_text.add_user }}</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>{{ ui_text.username }}</th>
+                    <th>{{ ui_text.email }}</th>
+                    <th>{{ ui_text.role }}</th>
+                    <th>{{ ui_text.total }} {{ resource_name_plural }}</th>
+                    <th>{{ ui_text.used }} {{ resource_name_plural }}</th>
+                    <th>{{ ui_text.remaining }} {{ resource_name_plural }}</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>
+                        <strong>{{ u.username }}</strong>
+                    </td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        {% if u.is_admin %}
+                            <span class="badge badge-admin">{{ ui_text.admin }}</span>
+                        {% else %}
+                            <span class="badge badge-user">{{ ui_text.user }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.total_tokens }}</td>
+                    <td>{{ u.used_tokens }}</td>
+                    <td class="{% if u.remaining_tokens < 100 %}text-danger{% endif %}">
+                        {{ u.remaining_tokens }}
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('admin.edit_user', user_id=u.id) }}" class="btn btn-sm btn-primary">{{ ui_text.edit }}</a>
+                        <a href="{{ url_for('admin.user_logs', user_id=u.id) }}" class="btn btn-sm btn-info">{{ ui_text.user_logs }}</a>
+                        {% if u.id != current_user.id %}
+                        <form method="POST" action="{{ url_for('admin.clear_logs', user_id=u.id) }}" class="inline-form" onsubmit="return confirm('确定要清除用户 {{ u.username }} 的使用记录吗？');">
+                            <button type="submit" class="btn btn-sm btn-secondary">{{ ui_text.clear_records }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" class="inline-form" onsubmit="return confirm('确定要删除用户 {{ u.username }} 吗？');">
+                            <button type="submit" class="btn btn-sm btn-danger">{{ ui_text.delete }}</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">{{ ui_text.no_records }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

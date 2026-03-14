@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ui_text.login }} - {{ project_name }}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h2>{{ ui_text.login }}</h2>
+        <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                <label for="username">{{ form.username.label }}</label>
+                {{ form.username(class="form-control") }}
+                {% if form.username.errors %}
+                    <span class="error">{{ form.username.errors[0] }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="password">{{ form.password.label }}</label>
+                {{ form.password(class="form-control") }}
+                {% if form.password.errors %}
+                    <span class="error">{{ form.password.errors[0] }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group checkbox-group">
+                {{ form.remember() }}
+                <label for="remember">{{ form.remember.label }}</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">{{ ui_text.login }}</button>
+        </form>
+        
+        <p class="auth-link">
+            还没有账号？<a href="{{ url_for('auth.register') }}">{{ ui_text.register }}</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

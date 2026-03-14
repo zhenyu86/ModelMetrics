@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ui_text.profile }} - {{ project_name }}{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width: 900px;">
+    <h1>{{ ui_text.profile }}</h1>
+    
+    <form method="POST" class="form">
+        {{ form.hidden_tag() }}
+        
+        <div class="user-info-row">
+            <div class="user-info-item">
+                <span class="info-label">{{ ui_text.username }}</span>
+                <span class="info-value">{{ current_user.username }}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="info-label">{{ ui_text.email }}</span>
+                <span class="info-value">{{ current_user.email }}</span>
+            </div>
+            <div class="user-info-item">
+                <span class="info-label">{{ ui_text.role }}</span>
+                <span class="info-value">
+                    {% if current_user.is_admin %}
+                    <span class="badge badge-admin">{{ ui_text.admin }}</span>
+                    {% else %}
+                    <span class="badge badge-user">{{ ui_text.user }}</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div class="modules-row">
+            <div class="module-card">
+                <div class="module-header">
+                    <span class="module-icon">👤</span>
+                    <span class="module-title">{{ ui_text.edit }}信息</span>
+                </div>
+                <div class="module-body">
+                    <div class="form-group">
+                        <label for="username">{{ form.username.label }}</label>
+                        {{ form.username(class="form-control") }}
+                        {% if form.username.errors %}
+                            <span class="error">{{ form.username.errors[0] }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">{{ form.email.label }}</label>
+                        {{ form.email(class="form-control") }}
+                        {% if form.email.errors %}
+                            <span class="error">{{ form.email.errors[0] }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" name="action" value="profile" class="btn btn-primary">{{ ui_text.save }}</button>
+                </div>
+            </div>
+            
+            <div class="module-card password-module">
+                <div class="module-header">
+                    <span class="module-icon">🔐</span>
+                    <span class="module-title">{{ ui_text.edit }}密码</span>
+                </div>
+                <div class="module-body">
+                    <div class="form-group">
+                        <label for="new_password">{{ ui_text.new_password }}</label>
+                        <input type="password" name="new_password" id="new_password" class="form-control" placeholder="输入新密码（至少6位）" minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">{{ ui_text.confirm_password }}</label>
+                        <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="再次输入新密码" minlength="6">
+                    </div>
+                    
+                    <button type="submit" name="action" value="password" class="btn btn-warning">{{ ui_text.save }}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.user-info-row {
+    display: flex;
+    gap: 20px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+}
+
+.user-info-item {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-info-item:last-child {
+    border-right: none;
+}
+
+.user-info-item .info-label {
+    display: block;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.user-info-item .info-value {
+    display: block;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.modules-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.module-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.module-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: #f8fafc;
+}
+
+.module-icon {
+    font-size: 24px;
+}
+
+.module-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.module-body {
+    padding: 20px;
+}
+
+.password-module {
+    border-top: 4px solid #f39c12;
+}
+
+.password-module .module-header {
+    background: #fffbf0;
+}
+
+@media (max-width: 768px) {
+    .user-info-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .user-info-item {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 8px;
+    }
+    
+    .user-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .modules-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

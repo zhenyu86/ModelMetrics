@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ui_text.dashboard }} - {{ project_name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1>{{ ui_text.welcome }}，{{ user.username }}</h1>
+    </div>
+    
+    <div class="stats-cards">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">{{ user.total_tokens }}</div>
+            <div class="stat-label">{{ ui_text.total }} {{ resource_name_plural }}</div>
+        </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">{{ user.used_tokens }}</div>
+            <div class="stat-label">{{ ui_text.used }} {{ resource_name_plural }}</div>
+        </div>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">✨</div>
+            <div class="stat-value">{{ user.remaining_tokens }}</div>
+            <div class="stat-label">{{ ui_text.remaining }} {{ resource_name_plural }}</div>
+        </div>
+    </div>
+    
+    <div class="usage-bar">
+        <div class="usage-label">
+            <span>{{ resource_name_plural }}{{ ui_text.usage }}</span>
+            <span>{{ "%.1f"|format((user.used_tokens / user.total_tokens * 100) if user.total_tokens > 0 else 0) }}%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress" style="width: {{ (user.used_tokens / user.total_tokens * 100) if user.total_tokens > 0 else 0 }}%"></div>
+        </div>
+    </div>
+    
+    <div class="recent-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin-bottom: 0;">{{ ui_text.recent_records }}</h2>
+            <a href="{{ url_for('user.logs') }}" class="btn btn-sm btn-secondary">{{ ui_text.view_all }}</a>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{{ ui_text.time }}</th>
+                    <th>{{ ui_text.action_type }}</th>
+                    <th>{{ ui_text.amount }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        {% if log.action == 'consume' %}
+                            <span class="badge badge-warning">{{ ui_text.consume }}</span>
+                        {% else %}
+                            <span class="badge badge-success">{{ ui_text.add }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log.amount }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center">{{ ui_text.no_records }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
